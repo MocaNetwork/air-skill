@@ -29,7 +29,7 @@ Then tell them what was written: `PARTNER.md`, `AIR.md`, `.env.example`.
 ## Issuer or both
 
 1. Partner ID must already be in `PARTNER.md`.
-2. Custom-auth is opt-in. Default AIR login. The simulator `custom-auth` branch is reference only: https://github.com/MocaNetwork/air-issuer-service-simulator/tree/custom-auth
+2. Custom-auth is opt-in. Default AIR login. If they want BYO auth, follow `/recipes/custom-auth-integration` — do not clone a sample frontend.
 3. Generate keys:
 
 ```bash

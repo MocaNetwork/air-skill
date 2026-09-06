@@ -63,7 +63,7 @@ Holder encryption: X25519 ephemeral, ECDH, HKDF sha256, info `data-enc-aes-256-g
 
 Outbound: `POST {AIR_API_ORIGIN}/v2/auth/initialize-user` header `x-partner-id`; `POST {MOCA_CHAIN_API_ORIGIN}/v1/dstorage/vcs` header `x-partner-auth`.
 
-Current constants: `apps/backend/WIRE-CONTRACT.md` on the simulator repo. When docs and the running backend disagree, the backend is authoritative for its own behavior; docs are authoritative for what AIR expects. Flag the discrepancy.
+Current constants live in the forked `air-issuer-service` and in this file. When docs and the running backend disagree, the backend is authoritative for its own behavior; docs are authoritative for what AIR expects. Flag the discrepancy.
 
 ## Docs to read when MCP is connected
 

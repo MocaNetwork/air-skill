@@ -2,16 +2,11 @@
 
 Scaffold or repair issuance. Read `PARTNER.md` + `AIR.md` first. The path is **self-hosted `air-issuer-service`** plus `airService.issueCredential`.
 
-Canonical remotes (fetch; do not assume a local copy):
+**Backend only** clone: https://github.com/MocaNetwork/air-issuer-service
 
-- Backend: https://github.com/MocaNetwork/air-issuer-service
-- Frontend patterns: https://github.com/MocaNetwork/air-issuer-service-simulator/tree/main/apps/web  
-  (`app/api/.well-known/jwks/route.ts`, `app/api/partner-jwt/route.ts`, `lib/air.ts`)
-- Custom-auth (opt-in only): simulator branch `custom-auth`
+**Frontend:** do not clone a sample app. Use a default Next scaffold (`create-next-app`) or routes in the existing app. Copy JWKS and Partner JWT stubs from this skill (`scripts/jwks.mjs emit`). Implement `AirService` + `issueCredential` from [account.md](account.md) and the snippet below.
 
-```bash
-curl -s https://raw.githubusercontent.com/MocaNetwork/air-issuer-service-simulator/main/apps/web/<path>
-```
+Custom-auth is opt-in only (`PARTNER.md`). Follow `/recipes/custom-auth-integration` on docs.moca.network — do not switch the frontend to a sample repo.
 
 ## Existing codebase
 
@@ -31,7 +26,7 @@ Do **not** change `/available-vc`, `/issue-vc`, or `/credential-status/:nonce`. 
 
 ## Frontend
 
-Write a Next app or add routes to the existing app. Copy stubs:
+Greenfield: `create-next-app` (App Router). Existing app: add the two API routes and a client page. Copy stubs:
 
 ```bash
 node <skill-base-dir>/scripts/jwks.mjs emit --target <web-root>

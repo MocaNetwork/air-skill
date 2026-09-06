@@ -36,8 +36,9 @@ function main() {
   process.stdout.write(`  Auth: ${partner.fields['Auth model'] || 'air-login'}\n`);
   process.stdout.write(`  Backend dest: ${dest}\n`);
   process.stdout.write(`  Clone: git clone --depth 1 ${REPO} ${dest}\n`);
-  process.stdout.write(`  Frontend: write Next JWKS + partner-jwt + AirService.issueCredential from skill assets\n`);
-  process.stdout.write(`  Custom-auth: ${partner.fields['Custom auth'] === 'yes' ? 'opt-in (simulator custom-auth branch is reference only)' : 'no — use AIR Kit login'}\n`);
+  process.stdout.write(`  Frontend: create-next-app or existing app + skill JWKS/JWT stubs + AirService.issueCredential\n`);
+  process.stdout.write(`  Do not clone air-issuer-service-simulator\n`);
+  process.stdout.write(`  Custom-auth: ${partner.fields['Custom auth'] === 'yes' ? 'opt-in — docs /recipes/custom-auth-integration' : 'no — use AIR Kit login'}\n`);
   process.stdout.write(`  Do not change /available-vc, /issue-vc, /credential-status/:nonce\n`);
   process.stdout.write(`  Do not set credentialSubject.id in schema classes\n`);
 

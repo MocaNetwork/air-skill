@@ -51,7 +51,7 @@ Inside the agent:
 
 Sandbox is the default. The agent asks for role (issuer / verifier / both / account-only / agentic) and a **Partner ID** from [Credential Dashboard → Account → General](https://developers.sandbox.air3.com/). It never invents that UUID.
 
-Issuer path: generate keys locally → show issuer DID → you update the Dashboard / send the activation pack → `/air issue` forks [`air-issuer-service`](https://github.com/MocaNetwork/air-issuer-service) and writes a Next claim UI from the [simulator web](https://github.com/MocaNetwork/air-issuer-service-simulator/tree/main/apps/web) patterns.
+Issuer path: generate keys locally → show issuer DID → you update the Dashboard / send the activation pack → `/air issue` forks [`air-issuer-service`](https://github.com/MocaNetwork/air-issuer-service) and writes a Next app (JWKS + Partner JWT + `issueCredential`) from this skill. Do not clone the issuer-service simulator.
 
 Verifier path: no `SEED`, no Nest backend, no activation email. `/air verify` wires the SDK.
 

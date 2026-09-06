@@ -28,7 +28,7 @@ Sandbox only in v1 init. Production: `BUILD_ENV.PRODUCTION` + `credentialNetwork
 
 ## BYO auth
 
-Only if `PARTNER.md` says `Custom auth: yes`. Backend signs a Partner JWT with `email` and `partnerUserId`; frontend calls `airService.login({ authToken })`. Worked example: simulator `custom-auth` branch and `/recipes/custom-auth-integration`.
+Only if `PARTNER.md` says `Custom auth: yes`. Backend signs a Partner JWT with `email` and `partnerUserId`; frontend calls `airService.login({ authToken })`. Follow `/recipes/custom-auth-integration` on docs.moca.network. Do not clone a sample app.
 
 ## Hard stop
 
