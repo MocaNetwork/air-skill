@@ -1,0 +1,35 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "air-skill",
+  "metadata": {
+    "description": "AIR Kit integration skill. One skill, 14 commands, traveling PARTNER.md + AIR.md context, and static detectors."
+  },
+  "owner": {
+    "name": "Moca Network",
+    "email": "developers@moca.network"
+  },
+  "plugins": [
+    {
+      "name": "air",
+      "description": "AIR Kit integration: /air init, issue, verify, audit. Partner JWT, JWKS, issuer DID, sandbox vs mainnet.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Moca Network",
+        "email": "developers@moca.network"
+      },
+      "source": "./",
+      "category": "development",
+      "homepage": "https://docs.moca.network",
+      "tags": [
+        "air",
+        "moca",
+        "credentials",
+        "jwks",
+        "airkit"
+      ],
+      "skills": [
+        "./skills/air"
+      ]
+    }
+  ]
+}

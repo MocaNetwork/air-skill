@@ -1,0 +1,12 @@
+{
+  "name": "air",
+  "description": "AIR Kit integration: /air init, issue, verify, audit. Partner JWT, JWKS, issuer DID, sandbox vs mainnet.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Moca Network",
+    "email": "developers@moca.network"
+  },
+  "homepage": "https://docs.moca.network",
+  "repository": "https://github.com/MocaNetwork/air-sdk-ai",
+  "skills": "./skills/"
+}

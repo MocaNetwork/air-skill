@@ -1,0 +1,59 @@
+# AIR
+
+<!-- air:air-schema 1 -->
+
+How this repository talks to AIR Kit. Later `/air` commands read this file and `PARTNER.md` before acting.
+
+## SDK
+
+- Package: `@mocanetwork/airkit`
+- Version: {{sdkVersion}}
+- BUILD_ENV: {{buildEnv}}
+- credentialNetwork: {{credentialNetwork}}
+
+## Auth
+
+- Model: {{authModel}}
+- Partner JWT header: `x-partner-auth`
+- Issuer backend headers: `x-api-key` / `x-admin-api-key`
+
+## Issuance
+
+- Path: {{issuancePath}}
+- Browser never calls `/available-vc` or `/issue-vc`
+
+## Verification
+
+- Path: {{verificationPath}}
+
+## Paymaster / gas
+
+- {{paymaster}}
+
+## Environment split
+
+Browser-safe (`NEXT_PUBLIC_*` only):
+
+- `NEXT_PUBLIC_PARTNER_ID`
+- `NEXT_PUBLIC_ISSUER_DID`
+- `NEXT_PUBLIC_ISSUE_PROGRAM_ID`
+- `NEXT_PUBLIC_VERIFY_PROGRAM_ID`
+- `NEXT_PUBLIC_BUILD_ENV`
+
+Server-only (never `NEXT_PUBLIC_*`):
+
+- `SEED`
+- `PARTNER_PRIVATE_KEY`
+- `PARTNER_PRIVATE_KEY_DER`
+- `PARTNER_PUBLIC_KEY`
+- `API_KEY`
+- `ADMIN_API_KEY`
+
+## Anti-references
+
+- Do not put `SEED` or `PARTNER_PRIVATE_KEY` in `NEXT_PUBLIC_*`
+- Do not sign Partner JWTs in the browser
+- Do not reuse one JWT across users or across issue + verify without the right scope
+- Do not assume Testnet credentials exist on mainnet
+- Do not skip JWKS because login already works
+- Do not call Privy directly for agentic wallets

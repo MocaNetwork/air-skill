@@ -1,0 +1,37 @@
+# Partner
+
+<!-- air:partner-schema 1 -->
+
+## Identity
+
+- Partner ID: {{partnerId}}
+- Issuer DID: {{issuerDid}}
+- Verifier DID: {{verifierDid}}
+- Role: {{role}}
+- Auth model: {{authModel}}
+- Vertical: {{vertical}}
+- Networks: {{networks}}
+- Custom auth: {{customAuth}}
+
+## Keys
+
+- JWKS URL: {{jwksUrl}}
+- Signing algorithm: {{signingAlg}}
+- kid: {{kid}}
+- Issuer backend: {{issuerBackend}}
+
+## Programs
+
+- Schema IDs: {{schemaIds}}
+- Issuance program IDs: {{issueProgramIds}}
+- Verification program IDs: {{verifyProgramIds}}
+
+## Activation
+
+- Issuer activated: {{issuerActivated}}
+- JWKS registered: {{jwksRegistered}}
+- Domain whitelisted: {{domainWhitelisted}}
+
+## Notes
+
+{{notes}}
