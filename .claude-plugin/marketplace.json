@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "air-skill",
+  "name": "air-dev-skill",
   "metadata": {
     "description": "AIR Kit integration skill. One skill, 14 commands, traveling PARTNER.md + AIR.md context, and static detectors."
   },

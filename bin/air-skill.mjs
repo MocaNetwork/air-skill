@@ -22,15 +22,15 @@ const installCmds = new Set(['install', 'update', 'uninstall', 'list']);
 const [cmd, ...rest] = process.argv.slice(2);
 
 if (!cmd || cmd === 'help' || cmd === '--help' || cmd === '-h') {
-  process.stdout.write(`air-skill <command> [args]
+  process.stdout.write(`air-dev-skill <command> [args]
 
 Install:
-  npx air-skill install
-  npx air-skill install -y
-  npx air-skill install --providers=cursor,claude --scope global
-  npx air-skill update
-  npx air-skill uninstall
-  npx air-skill list
+  npx air-dev-skill install
+  npx air-dev-skill install -y
+  npx air-dev-skill install --providers=cursor,claude --scope global
+  npx air-dev-skill update
+  npx air-dev-skill uninstall
+  npx air-dev-skill list
 
 Commands:
   detect [--json] [paths...]

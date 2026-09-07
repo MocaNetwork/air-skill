@@ -4,21 +4,21 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const STAMP_NAME = '.air-skill.json';
-export const SOURCE_ID = 'air-skill';
+export const STAMP_NAME = '.air-dev-skill.json';
+export const SOURCE_ID = 'air-dev-skill';
 export const AGENT_IDS = ['cursor', 'claude', 'codex', 'opencode', 'github'];
 
 const PKG_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SKILL_SOURCE = path.join(PKG_ROOT, 'skills', 'air');
 
-const HELP = `air-skill install
+const HELP = `air-dev-skill install
 
-  npx air-skill install
-  npx air-skill install -y
-  npx air-skill install --providers=cursor,claude --scope global
-  npx air-skill update
-  npx air-skill uninstall
-  npx air-skill list
+  npx air-dev-skill install
+  npx air-dev-skill install -y
+  npx air-dev-skill install --providers=cursor,claude --scope global
+  npx air-dev-skill update
+  npx air-dev-skill uninstall
+  npx air-dev-skill list
 `;
 
 function packageVersion() {

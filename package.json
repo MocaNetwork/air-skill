@@ -1,10 +1,10 @@
 {
-  "name": "air-skill",
+  "name": "air-dev-skill",
   "version": "0.1.0",
   "description": " AIR Kit integration skill: /air commands, PARTNER.md + AIR.md context, and static detectors.",
   "type": "module",
   "bin": {
-    "air-skill": "./bin/air-skill.mjs"
+    "air-dev-skill": "./bin/air-dev-skill.mjs"
   },
   "scripts": {
     "test": "node --test skills/air/scripts/detect.test.mjs skills/air/scripts/lib/partner.test.mjs bin/install.test.mjs"

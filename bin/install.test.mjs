@@ -59,8 +59,8 @@ describe('install flags', () => {
     const dest = path.join(cwd, '.cursor', 'skills', 'air');
     assert.equal(fs.existsSync(path.join(dest, 'SKILL.md')), true);
     assert.equal(fs.lstatSync(path.join(dest, 'SKILL.md')).isSymbolicLink(), false);
-    const stamp = JSON.parse(fs.readFileSync(path.join(dest, '.air-skill.json'), 'utf8'));
-    assert.equal(stamp.source, 'air-skill');
+    const stamp = JSON.parse(fs.readFileSync(path.join(dest, '.air-dev-skill.json'), 'utf8'));
+    assert.equal(stamp.source, 'air-dev-skill');
     assert.equal(fs.existsSync(path.join(dest, 'scripts', 'context.mjs')), true);
     assert.equal(fs.existsSync(path.join(dest, 'scripts', 'fixtures')), false);
   });

@@ -1,4 +1,4 @@
-# AIR skill
+# AIR Dev skill
 
  AIR Kit integration skill: one entry point (`/air <cmd>`), traveling `PARTNER.md` + `AIR.md`, scripts that change project state, and static detectors.
 
@@ -9,7 +9,7 @@ This is not the docs-routing skill (`npx skills add https://docs.moca.network`) 
 From the project root:
 
 ```bash
-npx air-skill install
+npx air-dev-skill install
 ```
 
 The installer lists detected agents first and pre-checks them. Space toggles. Enter confirms. Then it asks project vs global and shows the dests for the agents you picked. Reload the harness and type `/air`.
@@ -17,8 +17,8 @@ The installer lists detected agents first and pre-checks them. Space toggles. En
 CI / no TTY:
 
 ```bash
-npx air-skill install -y
-npx air-skill install --providers=cursor,claude --scope global
+npx air-dev-skill install -y
+npx air-dev-skill install --providers=cursor,claude --scope global
 ```
 
 Also:
@@ -34,9 +34,9 @@ npx skills add MocaNetwork/air-sdk-ai
 CLI after install:
 
 ```bash
-npx air-skill detect --json
-npx air-skill keys --env sandbox
-npx air-skill jwks --check https://<origin>/api/.well-known/jwks
+npx air-dev-skill detect --json
+npx air-dev-skill keys --env sandbox
+npx air-dev-skill jwks --check https://<origin>/api/.well-known/jwks
 ```
 
 Docs MCP (optional, complementary): `https://docs.moca.network/mcp`.

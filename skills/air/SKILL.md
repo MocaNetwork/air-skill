@@ -6,7 +6,7 @@ user-invocable: true
 argument-hint: "[init|provision|keys|register|account|schema|issue|verify|agent|audit|polish|document] [target]"
 license: MIT
 allowed-tools:
-  - Bash(npx air-skill *)
+  - Bash(npx air-dev-skill *)
   - Bash(node skills/air/scripts/*)
 ---
 
@@ -90,7 +90,7 @@ node <skill-base-dir>/scripts/detect.mjs --json
 node <skill-base-dir>/scripts/provision.mjs --env sandbox write-ids
 ```
 
-Or `npx air-skill <command>`.
+Or `npx air-dev-skill <command>`.
 
 Provisioning must take `--env sandbox|production`. After create, update PARTNER.md **IDs only**. Remote actions (`createPartner`, `registerJwksUrl`, `activateIssuer`) are stubs — tell the user to use the Dashboard and `/air register`.
 
@@ -107,4 +107,4 @@ Load only when needed:
 
 ## Related
 
-Install: `npx air-skill install` — checkbox of detected agents, then project vs global using those dests. Docs MCP: `https://docs.moca.network/mcp`. Static skill: `npx skills add https://docs.moca.network`. Agentic wallets: `npx skills add MocaNetwork/air-agentic-wallet-skill` — see [references/agent.md](references/agent.md).
+Install: `npx air-dev-skill install` — checkbox of detected agents, then project vs global using those dests. Docs MCP: `https://docs.moca.network/mcp`. Static skill: `npx skills add https://docs.moca.network`. Agentic wallets: `npx skills add MocaNetwork/air-agentic-wallet-skill` — see [references/agent.md](references/agent.md).

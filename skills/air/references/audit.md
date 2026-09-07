@@ -5,7 +5,7 @@ Deterministic checks first. No LLM for the scan.
 ```bash
 node <skill-base-dir>/scripts/detect.mjs --json
 # or
-npx air-skill detect --json
+npx air-dev-skill detect --json
 ```
 
 Severity: **P0** = credentials will not issue. Fix P0 before anything else.
