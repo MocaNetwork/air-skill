@@ -16,7 +16,7 @@ Then, if origins are up:
 sh <skill-base-dir>/scripts/preflight.sh https://<backend> https://<web>
 ```
 
-Preflight checks `/ready`, issuer DID, credential-status reachability, JWKS `kid`, and Partner JWT `kid` match.
+Preflight checks `GET /.well-known/jwks`, credential-status reachability, JWKS `kid`, and Partner JWT `kid` match. Issuer DID lives in `PARTNER.md` (repl), not an HTTP route.
 
 ## What detect cannot see
 

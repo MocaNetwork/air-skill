@@ -6,7 +6,8 @@ Init writes **sandbox**. Treat production as a separate integration.
 
 - Dashboard: https://developers.sandbox.air3.com/
 - SDK: `BUILD_ENV.SANDBOX`
-- Chain: Moca Testnet (`IDEN3_NETWORK_ID=testnet`)
+- Chain: Moca Testnet
+- Issuer backend `NODE_ENV=sandbox` (the service picks AIR / Moca origins from that value)
 - AIR API origin (typical): `https://air.api.sandbox.air3.com`
 - Moca chain / DStorage: `https://api.sandbox.mocachain.org` (`/v1/...`)
 - `credentialNetwork` must not be `"devnet"` (removed). Do not pair sandbox with `"mainnet"`.

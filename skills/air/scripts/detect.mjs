@@ -39,7 +39,7 @@ export function detect(root) {
       findings.push(finding('P0', 'public-secret-prefix', display, 'Secret env var uses NEXT_PUBLIC_ and will ship to the browser'));
     }
     if (/ISSUER_ORIGIN\s*=\s*https?:\/\/(localhost|127\.0\.0\.1)/i.test(text) || /ISSUER_ORIGIN\s*=\s*http:\/\//i.test(text)) {
-      findings.push(finding('P0', 'issuer-origin-not-https', display, 'ISSUER_ORIGIN must be public HTTPS (no localhost)'));
+      findings.push(finding('P1', 'issuer-origin-not-https', display, 'dev default; replace with the tunnel origin before a real claim'));
     }
     if (/jwks/i.test(text) && /https?:\/\/(localhost|127\.0\.0\.1)/i.test(text)) {
       findings.push(finding('P0', 'jwks-localhost', display, 'JWKS URL points at localhost; AIR cannot fetch it'));

@@ -8,10 +8,13 @@
 - Issuer DID: {{issuerDid}}
 - Verifier DID: {{verifierDid}}
 - Role: {{role}}
+- Existing partner: {{existingPartner}}
 - Auth model: {{authModel}}
 - Vertical: {{vertical}}
 - Networks: {{networks}}
 - Custom auth: {{customAuth}}
+- Database: {{database}}
+- Frontend: {{frontend}}
 
 ## Keys
 

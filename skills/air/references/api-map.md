@@ -12,9 +12,10 @@ Which host, which header.
 | `POST /v2/wallet/agent-sign` | URL from the handoff bundle | agent `signedMessage` + `agentSignature` |
 | `POST /available-vc`, `POST /issue-vc` | your `ISSUER_ORIGIN` | `x-api-key` |
 | `GET /credential-status/:nonce` | your `ISSUER_ORIGIN` | none |
-| `GET /.well-known/issuer-did` | your `ISSUER_ORIGIN` | none |
-| `GET /ready` | your `ISSUER_ORIGIN` | none |
+| `GET /.well-known/jwks` | your `ISSUER_ORIGIN` | none |
 | Admin issuance / revoke | your `ISSUER_ORIGIN` | `x-admin-api-key` |
+
+Issuer DID is not an HTTP route. Read it from `PARTNER.md` or `issuer-did.mjs` (nest repl).
 
 Production hosts differ; load [environments.md](environments.md) and do not reuse sandbox IDs.
 

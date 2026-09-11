@@ -11,7 +11,7 @@ Write `docs/AIR-INTEGRATION.md` (or update `README.md` if the user asked). Inclu
 - JWKS URL and `kid` convention
 - Issuance path and verification path from AIR.md
 - Env table split: `NEXT_PUBLIC_*` vs server-only names
-- How to run backend + web, migrate, and `GET /ready`
+- How to run backend + web, migrate (only if `Database` is set), and `GET /.well-known/jwks`
 - Register checklist (link, do not paste API keys)
 - Related: docs MCP, this `/air` skill, wallet skill if agentic
 

@@ -2,7 +2,7 @@
 
  AIR Kit integration skill: one entry point (`/air <cmd>`), traveling `PARTNER.md` + `AIR.md`, scripts that change project state, and static detectors.
 
-This is not the docs-routing skill (`npx skills add https://docs.moca.network`) and not the wallet skill (`npx skills add MocaNetwork/air-agentic-wallet-skill`). Those still matter. This skill is the integration operator.
+This is not the docs-routing skill (`npx skills add https://docs.air3.com`) and not the wallet skill (`npx skills add MocaNetwork/air-agentic-wallet-skill`). Those still matter. This skill is the integration operator.
 
 ## Install
 
@@ -39,7 +39,7 @@ npx air-dev-skill keys --env sandbox
 npx air-dev-skill jwks --check https://<origin>/api/.well-known/jwks
 ```
 
-Docs MCP (optional, complementary): `https://docs.moca.network/mcp`.
+Docs MCP (optional, complementary): `https://docs.air3.com/mcp`.
 
 ## First command
 
@@ -49,21 +49,21 @@ Inside the agent:
 /air init
 ```
 
-Sandbox is the default. The agent asks for role (issuer / verifier / both / account-only / agentic) and a **Partner ID** from [Credential Dashboard → Account → General](https://developers.sandbox.air3.com/). It never invents that UUID.
+Sandbox is the default. The agent asks for role, whether credentials already exist, a **Partner ID** from [Credential Dashboard → Account → General](https://developers.sandbox.air3.com/) (new partners), database, and frontend. It never invents that UUID. It never asks you for `ISSUER_ORIGIN` or claim URLs.
 
-Issuer path: generate keys locally → show issuer DID → you update the Dashboard / send the activation pack → `/air issue` forks [`air-issuer-service`](https://github.com/MocaNetwork/air-issuer-service) and writes a Next app (JWKS + Partner JWT + `issueCredential`) from this skill. Do not clone the issuer-service simulator.
+Issuer path: clone [`air-issuer-service`](https://github.com/MocaNetwork/air-issuer-service) → generate or import keys into `apps/backend/.env` → extract issuer DID via the nest repl → optional Next app (JWKS + Partner JWT + `issueCredential`) → tunnel → Dashboard paste. Do not clone the issuer-service simulator.
 
 Verifier path: no `SEED`, no Nest backend, no activation email. `/air verify` wires the SDK.
 
 ## Secrets
 
-`SEED`, `PARTNER_PRIVATE_KEY`, `API_KEY`, and `ADMIN_API_KEY` are written to gitignored `.env.local`. The skill prints the issuer DID only. Never commit those files. Never put them under `NEXT_PUBLIC_*`.
+`SEED`, `PARTNER_PRIVATE_KEY_DER`, `API_KEY`, and `ADMIN_API_KEY` are written to gitignored `apps/backend/.env` (and web `.env.local` when a frontend exists). The skill prints the issuer DID only. Never commit those files. Never put them under `NEXT_PUBLIC_*`.
 
 Sandbox and mainnet are separate partners, DIDs, and programs.
 
 ## Commands
 
-Setup: `/air`, `init`, `provision`, `keys`, `register`  
+Setup: `/air`, `init`, `provision`, `keys`, `issuer-did`, `register`  
 Build: `account`, `schema`, `issue`, `verify`, `agent`  
 Harden: `audit`, `polish`, `document`
 
@@ -72,5 +72,5 @@ Harden: `audit`, `polish`, `document`
 | Piece | Role |
 | --- | --- |
 | This repo | Integration skill — context files, commands, detectors |
-| [docs.moca.network](https://docs.moca.network) / MCP | Live API and dashboard docs |
+| [docs.air3.com](https://docs.air3.com) / MCP | Live API and dashboard docs |
 | [air-agentic-wallet-skill](https://github.com/MocaNetwork/air-agentic-wallet-skill) | Agent-sign and verify-by-agent scripts |

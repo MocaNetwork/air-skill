@@ -13,6 +13,7 @@ describe('detect', () => {
     assert.ok(ids.has('public-secret-prefix'));
     assert.ok(ids.has('jwks-url-field') || ids.has('jwks-localhost') || ids.has('jwks-http'));
     assert.ok(ids.has('issuer-origin-not-https'));
+    assert.equal(findings.find((f) => f.id === 'issuer-origin-not-https')?.severity, 'P1');
     assert.ok(ids.has('wrong-header-air-api'));
     assert.ok(ids.has('wrong-header-issuer'));
     assert.ok(ids.has('raw-pii-claim') || ids.has('email-as-claim'));

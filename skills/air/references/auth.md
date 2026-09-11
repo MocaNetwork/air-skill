@@ -15,7 +15,7 @@ Header: `x-partner-auth`. Signed **on the server** with `jose` (`RS256` or `ES25
 
 `kid` convention in this skill: **Partner ID**. Backend `PARTNER_PRIVATE_KEY_KID`, web JWT route, and JWKS `kid` must be the same string. One JWKS URL is registered in the Dashboard; both apps sign against it.
 
-Private key body: PKCS#8 / SPKI base64 **without** PEM headers in env. Code wraps headers on import.
+Private key body: `PARTNER_PRIVATE_KEY_DER` (PKCS#8 base64 **without** PEM headers). Code wraps headers on import. JWKS document is `SD_JWT_JWKS`.
 
 BYO login JWTs also include `email` and `partnerUserId`.
 
@@ -33,7 +33,7 @@ Stub: `skills/air/assets/next-jwks-route.ts`. Check: `node scripts/jwks.mjs --ch
 |---|---|---|
 | `x-api-key` | `API_KEY` | `POST /available-vc`, `POST /issue-vc` |
 | `x-admin-api-key` | `ADMIN_API_KEY` | `/admin/*` |
-| none | — | `/ready`, `/credential-status/:nonce`, `/.well-known/issuer-did` |
+| none | — | `/credential-status/:nonce`, `/.well-known/jwks` |
 
 Do not send `x-partner-auth` to those issuer routes. Do not send `x-api-key` to `api.sandbox.mocachain.org` or `air.api.sandbox.air3.com`.
 

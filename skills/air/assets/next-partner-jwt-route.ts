@@ -8,11 +8,12 @@ function wrapPrivateKeyPem(body: string): string {
 }
 
 export async function POST() {
-  const privateKeyBody = process.env.PARTNER_PRIVATE_KEY;
-  const algorithm = process.env.SIGNING_ALGORITHM;
-  const partnerId = process.env.NEXT_PUBLIC_PARTNER_ID;
+  const privateKeyBody = process.env.PARTNER_PRIVATE_KEY_DER;
+  const partnerId = process.env.NEXT_PUBLIC_PARTNER_ID || process.env.PARTNER_ID;
+  const kid = process.env.PARTNER_PRIVATE_KEY_KID || partnerId;
+  const algorithm = "ES256";
 
-  if (!privateKeyBody || !algorithm || !partnerId) {
+  if (!privateKeyBody || !partnerId || !kid) {
     return NextResponse.json({ error: "Missing partner key configuration" }, { status: 500 });
   }
 
@@ -20,7 +21,7 @@ export async function POST() {
   const now = Math.floor(Date.now() / 1000);
 
   const token = await new jose.SignJWT({ partnerId, scope: "issue" })
-    .setProtectedHeader({ alg: algorithm, kid: partnerId, typ: "JWT" })
+    .setProtectedHeader({ alg: algorithm, kid, typ: "JWT" })
     .setIssuedAt(now)
     .setExpirationTime(now + 5 * 60)
     .sign(privateKey);

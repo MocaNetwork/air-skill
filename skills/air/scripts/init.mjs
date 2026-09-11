@@ -3,9 +3,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { airPath, partnerPath, renderAirTemplate, renderPartnerTemplate } from './lib/partner.mjs';
 import { ASSETS, parseArgs, projectRoot, writeText } from './lib/project.mjs';
+import { UUID_RE } from './lib/secrets.mjs';
 
 const ROLES = ['issuer', 'verifier', 'both', 'account-only', 'agentic'];
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const DBS = ['docker', 'external', 'none'];
+const FRONTENDS = ['none', 'next', 'existing'];
 
 const ISSUANCE_BY_ROLE = {
   issuer: 'issueCredential + air-issuer-service',
@@ -24,12 +26,17 @@ const VERIFY_BY_ROLE = {
 };
 
 function usage(code = 2) {
-  process.stderr.write(`Usage: node init.mjs --role <${ROLES.join('|')}> --partner-id <uuid> [options]
+  process.stderr.write(`Usage: node init.mjs --role <${ROLES.join('|')}> [options]
 
 Options:
+  --partner-id <uuid>      required unless --existing
+  --existing               partner already has SEED / keys / DID
   --auth air-login|byo     default: air-login
   --vertical <name>        loyalty|gaming|fintech|events|ads|agents|other
   --custom-auth            BYO auth (issuer/both only)
+  --db docker|external|none
+  --database-url <url>     required when --db external
+  --frontend none|next|existing
   --sdk-version <ver>      default: latest
   --force                  overwrite existing PARTNER.md / AIR.md
   --project <dir>
@@ -41,12 +48,24 @@ function main() {
   const flags = parseArgs();
   if (flags.help) usage(0);
   const role = String(flags.role || '').toLowerCase();
+  const existing = Boolean(flags.existing);
   const partnerId = String(flags['partner-id'] || flags.partnerId || '').trim();
-  if (!ROLES.includes(role) || !partnerId) usage(2);
-  if (!UUID_RE.test(partnerId)) {
+  if (!ROLES.includes(role)) usage(2);
+  if (!existing && !partnerId) usage(2);
+  if (partnerId && !UUID_RE.test(partnerId)) {
     process.stderr.write('Partner ID must be the Dashboard UUID. Never invent one.\n');
     process.exit(2);
   }
+
+  const db = String(flags.db || 'none').toLowerCase();
+  if (!DBS.includes(db)) usage(2);
+  if (db === 'external' && !flags['database-url']) {
+    process.stderr.write('--database-url is required when --db external.\n');
+    process.exit(2);
+  }
+
+  const frontend = String(flags.frontend || 'none').toLowerCase();
+  if (!FRONTENDS.includes(frontend)) usage(2);
 
   const root = path.resolve(flags.project || projectRoot());
   const force = Boolean(flags.force);
@@ -62,15 +81,24 @@ function main() {
   }
 
   const issuerBackend = role === 'issuer' || role === 'both' ? 'air-issuer-service' : 'none';
+  const notes = [
+    'Init wrote sandbox defaults. Production is a separate partner / DID / program set.',
+    existing ? 'Existing partner: do not generate a new SEED. Import the current .env after the backend is cloned.' : '',
+    db === 'external' ? 'Pass --database-url to keys.mjs. Do not print the URL.' : '',
+  ].filter(Boolean).join(' ');
+
   const partner = renderPartnerTemplate({
     partnerId,
     issuerDid: '',
     verifierDid: '',
     role,
+    existingPartner: existing ? 'yes' : 'no',
     authModel,
     vertical,
     networks: 'sandbox-only',
     customAuth,
+    database: db,
+    frontend,
     jwksUrl: '',
     signingAlg: 'ES256',
     kid: partnerId,
@@ -81,7 +109,7 @@ function main() {
     issuerActivated: 'no',
     jwksRegistered: 'no',
     domainWhitelisted: 'no',
-    notes: 'Init wrote sandbox defaults. Production is a separate partner / DID / program set.',
+    notes,
   });
 
   const air = renderAirTemplate({
@@ -101,9 +129,20 @@ function main() {
   process.stdout.write(`Wrote ${partnerFile}\n`);
   process.stdout.write(`Wrote ${airFile}\n`);
   process.stdout.write(`Wrote ${path.join(root, '.env.example')}\n`);
+  process.stdout.write(`Existing partner: ${existing ? 'yes' : 'no'}\n`);
+  process.stdout.write(`Database: ${db}\n`);
+  process.stdout.write(`Frontend: ${frontend}\n`);
+
   if (role === 'issuer' || role === 'both') {
-    process.stdout.write('\nNext: node scripts/keys.mjs --env sandbox\n');
-    process.stdout.write('Then tell the user to update the Credential Dashboard with the issuer DID.\n');
+    if (db === 'docker') {
+      process.stdout.write('\nNext (database): docker run --name air-issuer-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=issuer-backend -p 5432:5432 -d postgres:16\n');
+    }
+    process.stdout.write('Next: node scripts/issue.mjs --clone-backend --yes --install --dir apps/backend\n');
+    if (existing) {
+      process.stdout.write('Then: node scripts/keys.mjs --env sandbox --import <path-to-existing.env>\n');
+    } else {
+      process.stdout.write('Then: node scripts/keys.mjs --env sandbox\n');
+    }
   } else if (role === 'verifier') {
     process.stdout.write('\nVerifier path: generate JWT keys if you call AIR verify APIs, then /air verify.\n');
     process.stdout.write('No SEED, issuer backend, or activation email.\n');

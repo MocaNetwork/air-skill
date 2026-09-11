@@ -13,20 +13,35 @@ Holder (browser + AirService.issueCredential)
 
 ## Backend env
 
-`DATABASE_URL` (postgres://, required), `ISSUER_ORIGIN` (public HTTPS, no trailing slash), `AIR_API_ORIGIN`, `MOCA_CHAIN_API_ORIGIN`, `SEED` (32-byte hex, `0x`-prefixed), `IDEN3_METHOD=air`, `IDEN3_BLOCKCHAIN=id`, `IDEN3_NETWORK_ID=testnet`, `PARTNER_ID`, `PARTNER_PRIVATE_KEY_KID`, `PARTNER_PRIVATE_KEY_ALG=ES256`, `PARTNER_PRIVATE_KEY_DER`, `API_KEY`, `ADMIN_API_KEY`.
+Match [air-issuer-service `.env.example`](https://github.com/MocaNetwork/air-issuer-service/blob/main/.env.example). Only these names:
 
-`SEED` determines the issuer DID together with the three `IDEN3_*` values. Generate once, back it up, never rotate a registered issuer. The seed is never shared with AIR.
+```
+NODE_ENV=sandbox
+DATABASE_URL=postgres://postgres:postgres@127.0.0.1/issuer-backend
+ISSUER_ORIGIN=http://localhost:3000
+SEED=0x...
+PARTNER_ID=...
+PARTNER_PRIVATE_KEY_KID=...
+PARTNER_PRIVATE_KEY_DER=...
+SD_JWT_JWKS='{"keys":[...]}'
+#SD_JWT_TSL_PARTITION_SIZE=80000
+API_KEY=...
+ADMIN_API_KEY=...
+```
 
-Read the DID: `GET /.well-known/issuer-did` or the boot log. Repl needs a reachable `DATABASE_URL`.
+`NODE_ENV=sandbox` selects the sandbox AIR / Moca origins inside the service. `NODE_ENV=production` for mainnet. Do not set `AIR_API_ORIGIN`, `MOCA_CHAIN_API_ORIGIN`, or `IDEN3_*` — the service owns those.
 
-Local Postgres:
+`SEED` determines the issuer DID. Generate once, back it up, never rotate a registered issuer. The seed is never shared with AIR.
+
+Read the DID with the nest repl (needs the cloned backend and a written `.env`):
 
 ```bash
-docker run --name air-issuer-pg -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=issuer-backend -p 5432:5432 -d postgres:16
-npx mikro-orm migration:up
-curl -s http://localhost:3000/ready
+echo 'console.log(get(CredentialIssuingService).issuerDID.string());' | pnpm run repl -
 ```
+
+or `node scripts/issuer-did.mjs --backend apps/backend`. Repl boots without Postgres when `DATABASE_URL` is empty (dev only).
+
+Local Postgres and migrations are opt-in. See the [init.md](init.md) runbook (`Database` field). Do not start Docker or run `migration:up` unless the user chose a database.
 
 ## Schema class
 
@@ -53,7 +68,7 @@ Register in `src/issuer/schemas/index.ts`. Never set `credentialSubject.id`.
 
 ## Routes
 
-AIR → `POST /available-vc`, `POST /issue-vc` (`x-api-key`). Public: `/ready`, `/credential-status/:nonce`, `/revocation-status/:nonce`, `/.well-known/issuer-did`. Admin: `x-admin-api-key`.
+AIR → `POST /available-vc`, `POST /issue-vc` (`x-api-key`). Public: `/credential-status/:nonce`, `/revocation-status/:nonce`, `/.well-known/jwks`. Admin: `x-admin-api-key`.
 
 `POST /issue-vc` returns an empty body after DStorage upload.
 
@@ -61,9 +76,7 @@ AIR → `POST /available-vc`, `POST /issue-vc` (`x-api-key`). Public: `/ready`, 
 
 Holder encryption: X25519 ephemeral, ECDH, HKDF sha256, info `data-enc-aes-256-gcm`, aes-256-gcm. Issuer DID: BJJ, SMT revocation, depth 40. `credentialStatus.id` = `${ISSUER_ORIGIN}/credential-status`.
 
-Outbound: `POST {AIR_API_ORIGIN}/v2/auth/initialize-user` header `x-partner-id`; `POST {MOCA_CHAIN_API_ORIGIN}/v1/dstorage/vcs` header `x-partner-auth`.
-
-Current constants live in the forked `air-issuer-service` and in this file. When docs and the running backend disagree, the backend is authoritative for its own behavior; docs are authoritative for what AIR expects. Flag the discrepancy.
+Outbound hosts are selected from `NODE_ENV` inside `air-issuer-service`. When docs and the running backend disagree, the backend is authoritative for its own behavior; docs are authoritative for what AIR expects. Flag the discrepancy.
 
 ## Docs to read when MCP is connected
 

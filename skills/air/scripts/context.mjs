@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadAir, loadPartner, needsIssuer, needsVerifier, presentId, roleOf } from './lib/partner.mjs';
+import { backendEnvPath, existingPartner, hasIssuerBackend } from './lib/layout.mjs';
 import { parseArgs, projectRoot, readText, rel, walkFiles } from './lib/project.mjs';
 import { parseEnvFile, secretPresence } from './lib/secrets.mjs';
 
@@ -17,7 +18,11 @@ export function collectSignals(root) {
   const role = roleOf(partner.fields);
   const files = walkFiles(root, { exts: SOURCE_EXTS });
   const envLocal = parseEnvFile(readText(path.join(root, '.env.local')));
-  const env = { ...parseEnvFile(readText(path.join(root, '.env'))), ...envLocal };
+  const env = {
+    ...parseEnvFile(readText(path.join(root, '.env'))),
+    ...parseEnvFile(readText(backendEnvPath(root))),
+    ...envLocal,
+  };
   const secrets = secretPresence(env);
 
   const joined = files.map((file) => {
@@ -29,7 +34,7 @@ export function collectSignals(root) {
   }).filter(Boolean);
 
   const hasJwksRoute = joined.some(({ text, file }) =>
-    ((/well-known\/jwks|exportJWK|keys:\s*\[/.test(text) && /kid/.test(text))
+    ((/well-known\/jwks|exportJWK|SD_JWT_JWKS/.test(text) && /kid|keys/.test(text))
       || /jwks/i.test(rel(root, file))));
   const hasIssueCall = joined.some(({ text }) => /issueCredential|\/issue-vc/.test(text));
   const hasVerifyCall = joined.some(({ text }) => /verifyCredential|verify-by-agent/.test(text));
@@ -50,6 +55,9 @@ export function collectSignals(root) {
       jwksRegistered: /^(yes|true|done)$/i.test(partner.fields['JWKS registered'] || ''),
       issuerBackend: partner.fields['Issuer backend'] || '',
       authModel: partner.fields['Auth model'] || air.fields.Model || '',
+      existing: existingPartner(partner.fields),
+      database: partner.fields.Database || 'none',
+      frontend: partner.fields.Frontend || 'none',
     },
     air: { exists: air.exists, buildEnv: air.fields.BUILD_ENV || '' },
     scan: {
@@ -58,6 +66,8 @@ export function collectSignals(root) {
       hasVerifyCall,
       hasPartnerJwtRoute,
       envSplitOk,
+      hasIssuerBackend: hasIssuerBackend(root),
+      hasBackendEnv: Boolean(readText(backendEnvPath(root))),
       fileCount: files.length,
     },
     secrets: {
@@ -75,17 +85,26 @@ export function recommend(signals) {
   if (!signals.ok) return [{ cmd: '/air init', reason: 'No PARTNER.md — capture partner identity first.' }];
   const picks = [];
   const { partner, scan, needs } = signals;
-  if (needs.issuer && !partner.partnerId) {
+  if (needs.issuer && !partner.partnerId && !partner.existing) {
     picks.push({ cmd: '/air init', reason: 'Issuer role but Partner ID is missing. Paste it from the Dashboard.' });
   }
-  if (needs.issuer && partner.partnerId && signals.secrets.missing.includes('SEED')) {
-    picks.push({ cmd: '/air keys', reason: 'Partner ID is set; generate the seed and partner keypair next.' });
+  if (needs.issuer && !scan.hasIssuerBackend) {
+    picks.push({ cmd: '/air issue', reason: 'Clone air-issuer-service before generating or importing keys.' });
   }
-  if (needs.issuer && !scan.hasJwksRoute) {
-    picks.push({ cmd: '/air keys then /air audit', reason: 'No JWKS route in the repo. Issue/verify will 401.' });
+  if (needs.issuer && scan.hasIssuerBackend && partner.existing && signals.secrets.missing.includes('SEED')) {
+    picks.push({ cmd: '/air keys --import', reason: 'Existing partner: import the current .env. Do not generate a new SEED.' });
   }
-  if (needs.issuer && scan.hasJwksRoute && !partner.issuerActivated) {
-    picks.push({ cmd: '/air register', reason: 'Keys exist; issuer is not marked activated.' });
+  if (needs.issuer && scan.hasIssuerBackend && !partner.existing && signals.secrets.missing.includes('SEED')) {
+    picks.push({ cmd: '/air keys', reason: 'Backend is cloned; generate the seed and partner keypair next.' });
+  }
+  if (needs.issuer && !signals.secrets.missing.includes('SEED') && !partner.issuerDid) {
+    picks.push({ cmd: '/air issuer-did', reason: 'Keys exist; extract the issuer DID from the backend repl.' });
+  }
+  if (needs.issuer && partner.issuerDid && !scan.hasJwksRoute && partner.frontend !== 'none') {
+    picks.push({ cmd: '/air issue', reason: 'No JWKS route in the repo. Emit stubs after the frontend exists.' });
+  }
+  if (needs.issuer && partner.issuerDid && !partner.issuerActivated) {
+    picks.push({ cmd: '/air register', reason: 'DID is known; issuer is not marked activated.' });
   }
   if (needs.issuer && partner.issuerActivated && !scan.hasIssueCall) {
     picks.push({ cmd: '/air issue', reason: 'Issuer is activated but there is no issue call yet.' });
@@ -130,8 +149,10 @@ function main() {
   process.stdout.write(`# AIR context\n\n`);
   process.stdout.write(`Root: ${root}\n`);
   process.stdout.write(`Role: ${signals.partner.role || '(unset)'}\n`);
+  process.stdout.write(`Existing partner: ${signals.partner.existing ? 'yes' : 'no'}\n`);
   process.stdout.write(`Partner ID: ${signals.partner.partnerId ? 'set' : 'missing'}\n`);
   process.stdout.write(`Issuer DID: ${signals.partner.issuerDid ? 'set' : 'missing'}\n`);
+  process.stdout.write(`Backend: ${signals.scan.hasIssuerBackend}\n`);
   process.stdout.write(`JWKS route: ${signals.scan.hasJwksRoute}\n`);
   process.stdout.write(`Issue call: ${signals.scan.hasIssueCall}\n`);
   process.stdout.write(`Verify call: ${signals.scan.hasVerifyCall}\n`);

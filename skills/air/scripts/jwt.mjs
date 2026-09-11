@@ -2,8 +2,9 @@
 import path from 'node:path';
 import * as jose from 'jose';
 import { loadPartner } from './lib/partner.mjs';
+import { backendEnvPath, webEnvPath } from './lib/layout.mjs';
 import { parseArgs, projectRoot, readText } from './lib/project.mjs';
-import { parseEnvFile } from './lib/secrets.mjs';
+import { algFromJwks, parseEnvFile } from './lib/secrets.mjs';
 
 const MAX_EXP_SEC = 15 * 60;
 const DEFAULT_EXP_SEC = 5 * 60;
@@ -36,19 +37,22 @@ async function main() {
   }
 
   const root = path.resolve(flags.project || projectRoot());
-  const envFile = path.resolve(root, flags['env-file'] || '.env.local');
+  const envFile = flags['env-file']
+    ? path.resolve(root, flags['env-file'])
+    : webEnvPath(root);
   const env = {
+    ...parseEnvFile(readText(backendEnvPath(root))),
     ...parseEnvFile(readText(path.join(root, '.env'))),
     ...parseEnvFile(readText(envFile)),
   };
   const partner = loadPartner(root);
   const partnerId = env.NEXT_PUBLIC_PARTNER_ID || env.PARTNER_ID || partner.fields['Partner ID'];
-  const alg = env.SIGNING_ALGORITHM || env.PARTNER_PRIVATE_KEY_ALG || 'ES256';
   const kid = env.PARTNER_PRIVATE_KEY_KID || partner.fields.kid || partnerId;
-  const keyBody = env.PARTNER_PRIVATE_KEY || env.PARTNER_PRIVATE_KEY_DER;
+  const keyBody = env.PARTNER_PRIVATE_KEY_DER;
+  const alg = algFromJwks(env.SD_JWT_JWKS) || 'ES256';
 
   if (!partnerId || !keyBody) {
-    process.stderr.write('Missing partnerId or PARTNER_PRIVATE_KEY. Run /air keys.\n');
+    process.stderr.write('Missing partnerId or PARTNER_PRIVATE_KEY_DER. Run /air keys.\n');
     process.exit(2);
   }
 

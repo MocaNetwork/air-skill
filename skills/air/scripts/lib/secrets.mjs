@@ -1,8 +1,32 @@
-import { generateKeyPairSync, randomBytes } from 'node:crypto';
+import { createPrivateKey, generateKeyPairSync, randomBytes } from 'node:crypto';
 
 export const SECRET_KEYS = [
   'SEED',
-  'PARTNER_PRIVATE_KEY',
+  'PARTNER_PRIVATE_KEY_DER',
+  'API_KEY',
+  'ADMIN_API_KEY',
+];
+
+export const BACKEND_ENV_KEYS = [
+  'NODE_ENV',
+  'DATABASE_URL',
+  'ISSUER_ORIGIN',
+  'SEED',
+  'PARTNER_ID',
+  'PARTNER_PRIVATE_KEY_KID',
+  'PARTNER_PRIVATE_KEY_DER',
+  'SD_JWT_JWKS',
+  'API_KEY',
+  'ADMIN_API_KEY',
+];
+
+export const SEED_RE = /^0x[0-9a-f]{64}$/i;
+export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const IMPORT_REQUIRED = [
+  'SEED',
+  'PARTNER_ID',
+  'PARTNER_PRIVATE_KEY_KID',
   'PARTNER_PRIVATE_KEY_DER',
   'API_KEY',
   'ADMIN_API_KEY',
@@ -12,9 +36,11 @@ export function generateSecrets({ kid, alg = 'ES256' } = {}) {
   if (alg !== 'ES256') {
     throw new Error('v1 keys.mjs generates ES256 (P-256) only, matching air-issuer-service bin/generate-secrets');
   }
-  const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
+  if (!kid) {
+    throw new Error('kid is required');
+  }
+  const { privateKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
   const der = privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64');
-  const publicBody = stripPem(publicKey.export({ type: 'spki', format: 'pem' }));
   const { d: _d, ...jwk } = privateKey.export({ format: 'jwk' });
   const jwks = { keys: [{ ...jwk, use: 'sig', alg: 'ES256', kid }] };
 
@@ -22,21 +48,50 @@ export function generateSecrets({ kid, alg = 'ES256' } = {}) {
     SEED: `0x${randomBytes(32).toString('hex')}`,
     PARTNER_PRIVATE_KEY_KID: kid,
     PARTNER_PRIVATE_KEY_DER: der,
-    PARTNER_PRIVATE_KEY: der,
-    PARTNER_PUBLIC_KEY: publicBody,
     SD_JWT_JWKS: JSON.stringify(jwks),
     API_KEY: randomBytes(32).toString('hex'),
     ADMIN_API_KEY: randomBytes(32).toString('hex'),
-    SIGNING_ALGORITHM: 'ES256',
-    PARTNER_PRIVATE_KEY_ALG: 'ES256',
   };
 }
 
-export function stripPem(pem) {
-  return pem
-    .split(/\r?\n/)
-    .filter((line) => line && !line.startsWith('-----'))
-    .join('');
+export function jwksFromDer(der, kid) {
+  const key = createPrivateKey({ key: Buffer.from(der, 'base64'), format: 'der', type: 'pkcs8' });
+  const jwk = key.export({ format: 'jwk' });
+  delete jwk.d;
+  delete jwk.p;
+  delete jwk.q;
+  delete jwk.dp;
+  delete jwk.dq;
+  delete jwk.qi;
+  const alg = jwk.kty === 'RSA' ? 'RS256' : 'ES256';
+  return JSON.stringify({ keys: [{ ...jwk, use: 'sig', alg, kid }] });
+}
+
+export function algFromJwks(jwks) {
+  try {
+    const parsed = typeof jwks === 'string' ? JSON.parse(unwrapQuotes(jwks)) : jwks;
+    return parsed?.keys?.[0]?.alg || 'ES256';
+  } catch {
+    return 'ES256';
+  }
+}
+
+export function unwrapQuotes(value) {
+  const s = String(value ?? '');
+  if ((s.startsWith("'") && s.endsWith("'")) || (s.startsWith('"') && s.endsWith('"'))) {
+    return s.slice(1, -1);
+  }
+  return s;
+}
+
+export function formatEnvValue(key, value) {
+  if (value == null) return '';
+  const raw = String(value);
+  if (key === 'SD_JWT_JWKS') {
+    const unquoted = unwrapQuotes(raw);
+    return `'${unquoted}'`;
+  }
+  return raw;
 }
 
 export function parseEnvFile(text) {
@@ -47,7 +102,7 @@ export function parseEnvFile(text) {
     if (!line || line.startsWith('#')) continue;
     const eq = line.indexOf('=');
     if (eq === -1) continue;
-    out[line.slice(0, eq)] = line.slice(eq + 1);
+    out[line.slice(0, eq)] = unwrapQuotes(line.slice(eq + 1));
   }
   return out;
 }
@@ -61,13 +116,79 @@ export function upsertEnv(text, values) {
     const key = line.slice(0, eq);
     if (!(key in values)) return line;
     seen.add(key);
-    return `${key}=${values[key]}`;
+    return `${key}=${formatEnvValue(key, values[key])}`;
   });
   for (const [key, value] of Object.entries(values)) {
     if (seen.has(key)) continue;
-    next.push(`${key}=${value}`);
+    next.push(`${key}=${formatEnvValue(key, value)}`);
   }
   return `${next.filter((line, i, arr) => !(line === '' && arr[i - 1] === '')).join('\n').replace(/\n*$/, '')}\n`;
+}
+
+export function renderBackendEnv(values) {
+  const v = values || {};
+  return [
+    `NODE_ENV=${v.NODE_ENV || 'sandbox'}`,
+    '',
+    `DATABASE_URL=${v.DATABASE_URL ?? ''}`,
+    `ISSUER_ORIGIN=${v.ISSUER_ORIGIN || 'http://localhost:3000'}`,
+    `SEED=${v.SEED || ''}`,
+    '',
+    `PARTNER_ID=${v.PARTNER_ID || ''}`,
+    `PARTNER_PRIVATE_KEY_KID=${v.PARTNER_PRIVATE_KEY_KID || ''}`,
+    `PARTNER_PRIVATE_KEY_DER=${v.PARTNER_PRIVATE_KEY_DER || ''}`,
+    '',
+    `SD_JWT_JWKS=${formatEnvValue('SD_JWT_JWKS', v.SD_JWT_JWKS || '')}`,
+    '#SD_JWT_TSL_PARTITION_SIZE=80000',
+    '',
+    `API_KEY=${v.API_KEY || ''}`,
+    `ADMIN_API_KEY=${v.ADMIN_API_KEY || ''}`,
+    '',
+  ].join('\n');
+}
+
+export function pickBackendEnv(values) {
+  const out = {};
+  for (const key of BACKEND_ENV_KEYS) {
+    if (values[key] !== undefined) out[key] = values[key];
+  }
+  return out;
+}
+
+export function importPartnerEnv(env) {
+  const missing = IMPORT_REQUIRED.filter((key) => !env[key] || String(env[key]).startsWith('{{'));
+  if (missing.length) {
+    throw new Error(`Imported env is missing: ${missing.join(', ')}`);
+  }
+  if (!SEED_RE.test(env.SEED)) {
+    throw new Error('SEED must be 0x plus 64 hex characters');
+  }
+  if (!UUID_RE.test(String(env.PARTNER_ID).trim())) {
+    throw new Error('PARTNER_ID must be the Dashboard UUID');
+  }
+  if (!String(env.PARTNER_PRIVATE_KEY_DER).trim()) {
+    throw new Error('PARTNER_PRIVATE_KEY_DER is empty');
+  }
+
+  let jwks = env.SD_JWT_JWKS ? unwrapQuotes(env.SD_JWT_JWKS) : '';
+  if (!jwks) {
+    jwks = jwksFromDer(env.PARTNER_PRIVATE_KEY_DER, env.PARTNER_PRIVATE_KEY_KID);
+  } else {
+    JSON.parse(jwks);
+  }
+
+  return {
+    SEED: env.SEED,
+    PARTNER_ID: String(env.PARTNER_ID).trim(),
+    PARTNER_PRIVATE_KEY_KID: String(env.PARTNER_PRIVATE_KEY_KID).trim(),
+    PARTNER_PRIVATE_KEY_DER: String(env.PARTNER_PRIVATE_KEY_DER).trim(),
+    SD_JWT_JWKS: jwks,
+    API_KEY: env.API_KEY,
+    ADMIN_API_KEY: env.ADMIN_API_KEY,
+    DATABASE_URL: env.DATABASE_URL,
+    ISSUER_ORIGIN: env.ISSUER_ORIGIN,
+    NODE_ENV: env.NODE_ENV,
+  };
 }
 
 export function secretPresence(env) {

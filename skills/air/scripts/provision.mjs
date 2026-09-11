@@ -36,8 +36,9 @@ Contract (do not invent curl):
 
 Init path today:
   1. Paste Partner ID from https://developers.sandbox.air3.com/
-  2. node keys.mjs --env ${envName}
-  3. /air register
+  2. node issue.mjs --clone-backend --yes --install
+  3. node keys.mjs --env ${envName}   # or --import <existing.env>
+  4. /air register
 `);
   process.exit(2);
 }
@@ -68,6 +69,7 @@ function writeIds(root, envName, flags) {
     publicEnv.NEXT_PUBLIC_PARTNER_ID = after['Partner ID'];
     publicEnv.PARTNER_ID = after['Partner ID'];
     publicEnv.PARTNER_PRIVATE_KEY_KID = after.kid || after['Partner ID'];
+    publicEnv.PARTNER_ID = after['Partner ID'];
   }
   if (after['Issuer DID']) publicEnv.NEXT_PUBLIC_ISSUER_DID = after['Issuer DID'];
   if (after['Issuance program IDs']) publicEnv.NEXT_PUBLIC_ISSUE_PROGRAM_ID = after['Issuance program IDs'];

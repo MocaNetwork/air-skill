@@ -1,13 +1,17 @@
 # /air register
 
-Two registrations. They are frequently confused.
+Two registrations. They are frequently confused. Never ask the user to invent `ISSUER_ORIGIN` or the claim paths — read `ISSUER_ORIGIN` from `apps/backend/.env` and derive the URLs.
 
-## Self-serve (user does this)
+## Self-serve (user pastes what the skill computed)
 
-1. Dashboard → Account → General → **JWKS URL**. Paste the full public HTTPS URL the app serves, e.g. `https://<web-tunnel>/api/.well-known/jwks`. Localhost fails.
-2. Dashboard → **Domains**. Whitelist the web origin.
+Dashboard page, after the tunnel is up:
 
-Check the URL first:
+1. **JWKS URL** — `https://<web-tunnel>/api/.well-known/jwks`. Localhost fails.
+2. **Available VC API** — `${ISSUER_ORIGIN}/available-vc`
+3. **Issue VC API** (optional) — `${ISSUER_ORIGIN}/issue-vc`
+4. **Domains** — whitelist the web origin.
+
+Check the JWKS URL first:
 
 ```bash
 node <skill-base-dir>/scripts/jwks.mjs --check https://<web-origin>/api/.well-known/jwks
@@ -15,14 +19,14 @@ node <skill-base-dir>/scripts/jwks.mjs --check https://<web-origin>/api/.well-kn
 
 ## Manual (email the Moca Network / AIR team)
 
-There is no self-serve field for the issuer backend API key. Send all four:
+There is no self-serve field for the issuer backend API key. Send all four. Copy `API_KEY` from `apps/backend/.env` — do not print it in chat.
 
 | Item | Source | Share? |
 |---|---|---|
-| Issuer DID | `GET ${ISSUER_ORIGIN}/.well-known/issuer-did` | yes |
-| API key | backend `API_KEY` — AIR sends it as `x-api-key` | yes |
-| Partner ID | Dashboard UUID | yes |
-| Issuer backend URLs | `POST /available-vc` and `POST /issue-vc` on the public HTTPS origin | yes |
+| Issuer DID | `PARTNER.md` (from `issuer-did.mjs` / nest repl) | yes |
+| API key | `API_KEY` in `apps/backend/.env` — AIR sends it as `x-api-key` | yes |
+| Partner ID | Dashboard UUID / `PARTNER.md` | yes |
+| Issuer backend URLs | `${ISSUER_ORIGIN}/available-vc` and `${ISSUER_ORIGIN}/issue-vc` | yes |
 
 Do **not** send `SEED`, `ADMIN_API_KEY`, or partner private keys.
 

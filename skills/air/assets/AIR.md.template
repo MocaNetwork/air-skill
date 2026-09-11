@@ -40,18 +40,28 @@ Browser-safe (`NEXT_PUBLIC_*` only):
 - `NEXT_PUBLIC_VERIFY_PROGRAM_ID`
 - `NEXT_PUBLIC_BUILD_ENV`
 
-Server-only (never `NEXT_PUBLIC_*`):
+Issuer backend (`apps/backend/.env`, never `NEXT_PUBLIC_*`):
 
+- `NODE_ENV`
+- `DATABASE_URL`
+- `ISSUER_ORIGIN`
 - `SEED`
-- `PARTNER_PRIVATE_KEY`
+- `PARTNER_ID`
+- `PARTNER_PRIVATE_KEY_KID`
 - `PARTNER_PRIVATE_KEY_DER`
-- `PARTNER_PUBLIC_KEY`
+- `SD_JWT_JWKS`
 - `API_KEY`
 - `ADMIN_API_KEY`
 
+Web server-only (never `NEXT_PUBLIC_*`):
+
+- `PARTNER_PRIVATE_KEY_KID`
+- `PARTNER_PRIVATE_KEY_DER`
+- `SD_JWT_JWKS`
+
 ## Anti-references
 
-- Do not put `SEED` or `PARTNER_PRIVATE_KEY` in `NEXT_PUBLIC_*`
+- Do not put `SEED` or `PARTNER_PRIVATE_KEY_DER` in `NEXT_PUBLIC_*`
 - Do not sign Partner JWTs in the browser
 - Do not reuse one JWT across users or across issue + verify without the right scope
 - Do not assume Testnet credentials exist on mainnet
